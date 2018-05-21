@@ -8,27 +8,26 @@ import java.util.*;
 /**
  * Represents a non-deterministic finite automaton.
  *
- * @param <State> Any type representin Symbol sg a state that has equals and hashCode defined.
  * @param <Symbol> Any type that has equals and hashCode defined.
  */
 @Value
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Automaton<State, Symbol> {
+public class Automaton<Symbol> {
 
     @NonNull
-    private final Set<State> states;
+    private final int numStates;
 
     @NonNull
-    private final Table<State, Symbol, Set<State>> transitions;
+    private final Table<Integer, Symbol, Set<Integer>> transitions;
 
     @NonNull
-    private final Map<State, Set<State>> epsilonTransitions;
+    private final Map<Integer, Set<Integer>> epsilonTransitions;
 
     @NonNull
-    private final State initialState;
+    private final int initialState;
 
     @NonNull
-    private final Set<State> finalStates;
+    private final Set<Integer> finalStates;
 
     /**
      * Accepts an array of symbols and returns true indicating acceptance and false rejection.
@@ -42,14 +41,14 @@ public class Automaton<State, Symbol> {
      */
     public boolean accepts(Iterable<Symbol> input) {
 
-        Set<State> currentStates = new HashSet<>();
+        Set<Integer> currentStates = new HashSet<>();
         currentStates.addAll(epsilonClosure(initialState));
 
         for (Symbol symbol : input) {
-            Set<State> nextStates = new HashSet<>();
-            for (State currentState : currentStates) {
-                for (State adjacentState : adjacentStates(currentState, symbol)) {
-                    Set<State> adjacentStateEpsilonClosure = epsilonClosure(adjacentState);
+            Set<Integer> nextStates = new HashSet<>();
+            for (int currentState : currentStates) {
+                for (int adjacentState : adjacentStates(currentState, symbol)) {
+                    Set<Integer> adjacentStateEpsilonClosure = epsilonClosure(adjacentState);
                     nextStates.addAll(adjacentStateEpsilonClosure);
                     if (!Sets.intersection(adjacentStateEpsilonClosure, finalStates).isEmpty()) {
                         return true;
@@ -61,57 +60,55 @@ public class Automaton<State, Symbol> {
         return false;
     }
 
-    private Set<State> epsilonClosure(State s) {
-        Set<State> states = epsilonTransitions.getOrDefault(s, new HashSet<>());
+    private Set<Integer> epsilonClosure(int s) {
+        Set<Integer> states = epsilonTransitions.getOrDefault(s, new HashSet<>());
         states.add(s);
         return states;
     }
 
-    private Set<State> adjacentStates(State s, Symbol sym) {
-        Set<State> out = transitions.get(s, sym);
+    private Set<Integer> adjacentStates(int s, Symbol sym) {
+        Set<Integer> out = transitions.get(s, sym);
         if (out == null) {
             out = new HashSet<>();
         }
         return out;
     }
 
-    public static <State, Symbol> AutomatonBuilder<State, Symbol> builder() {
+    public static <Symbol> AutomatonBuilder<Symbol> builder() {
         return new AutomatonBuilder<>();
     }
 
-    public static class AutomatonBuilder<State, Symbol> {
+    public static class AutomatonBuilder<Symbol> {
 
-        private Set<State> states;
-        private Table<State, Symbol, Set<State>> transitions;
-        private Map<State, Set<State>> epsilonTransitions;
-        private State initialState;
-        private Set<State> finalStates;
+        private int numStates;
+        private Table<Integer, Symbol, Set<Integer>> transitions;
+        private Map<Integer, Set<Integer>> epsilonTransitions;
+        private int initialState;
+        private Set<Integer> finalStates;
 
         private AutomatonBuilder() {
-            states = new HashSet<>();
             transitions = HashBasedTable.create();
             epsilonTransitions = new HashMap<>();
             finalStates = new HashSet<>();
-            initialState = null;
         }
 
-        public AutomatonBuilder<State, Symbol> withState(State s) {
-            states.add(s);
+        public AutomatonBuilder<Symbol> withNumStates(int numStates) {
+            this.numStates = numStates;
             return this;
         }
 
-        public AutomatonBuilder<State, Symbol> withInitialState(State s) {
+        public AutomatonBuilder<Symbol> withInitialState(int s) {
             initialState = s;
             return this;
         }
 
-        public AutomatonBuilder<State, Symbol> withFinalState(State s) {
+        public AutomatonBuilder<Symbol> withFinalState(int s) {
             finalStates.add(s);
             return this;
         }
 
-        public AutomatonBuilder<State, Symbol> withTransition(State from, Symbol s, State to) {
-            Set<State> toStates = transitions.get(from, s);
+        public AutomatonBuilder<Symbol> withTransition(int from, Symbol s, int to) {
+            Set<Integer> toStates = transitions.get(from, s);
             if (toStates == null) {
                 toStates = new HashSet<>();
                 transitions.put(from, s, toStates);
@@ -120,8 +117,8 @@ public class Automaton<State, Symbol> {
             return this;
         }
 
-        public AutomatonBuilder<State, Symbol> withEpsilonTransition(State from, State to) {
-            Set<State> toStates = epsilonTransitions.get(from);
+        public AutomatonBuilder<Symbol> withEpsilonTransition(int from, int to) {
+            Set<Integer> toStates = epsilonTransitions.get(from);
             if (toStates == null) {
                 toStates = new HashSet<>();
                 epsilonTransitions.put(from, toStates);
@@ -130,38 +127,35 @@ public class Automaton<State, Symbol> {
             return this;
         }
 
-        public Automaton<State, Symbol> build() {
+        public Automaton<Symbol> build() {
             validate();
-            return new Automaton<>(states, transitions, epsilonTransitions, initialState, finalStates);
+            return new Automaton<>(numStates, transitions, epsilonTransitions, initialState, finalStates);
         }
 
         void validate() throws InvalidAutomatonException {
-            if (initialState == null) {
-                throw new InvalidAutomatonException("Initial state not specified");
-            }
             validateStateInUniverse(initialState);
 
-            for (State s : finalStates) {
+            for (int s : finalStates) {
                 validateStateInUniverse(s);
             }
 
-            for (Table.Cell<State, Symbol, Set<State>> cell : transitions.cellSet()) {
+            for (Table.Cell<Integer, Symbol, Set<Integer>> cell : transitions.cellSet()) {
                 validateStateInUniverse(cell.getRowKey());
-                for (State s : cell.getValue()) {
+                for (int s : cell.getValue()) {
                     validateStateInUniverse(s);
                 }
             }
 
-            for (Map.Entry<State, Set<State>> entry : epsilonTransitions.entrySet()) {
+            for (Map.Entry<Integer, Set<Integer>> entry : epsilonTransitions.entrySet()) {
                 validateStateInUniverse(entry.getKey());
-                for (State s : entry.getValue()) {
+                for (int s : entry.getValue()) {
                     validateStateInUniverse(s);
                 }
             }
         }
 
-        void validateStateInUniverse(State s) {
-            if (!states.contains(s)) {
+        void validateStateInUniverse(int s) {
+            if (s < 0 || s >= numStates) {
                 throw new InvalidAutomatonException("State " + s + " not in universe");
             }
         }

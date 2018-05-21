@@ -15,19 +15,12 @@ public class AutomatonTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Test
-    public void ifNoStartState_builder_shouldThrowException() {
-
-        thrown.expect(InvalidAutomatonException.class);
-        Automaton.<Integer, Character>builder().build();
-    }
-
-    @Test
     public void ifInvalidStartState_builder_shouldThrowException() {
 
         thrown.expect(InvalidAutomatonException.class);
-        Automaton.<Integer, Character>builder()
-                .withState(1)
-                .withInitialState(2)
+        Automaton.<Character>builder()
+                .withNumStates(1)
+                .withInitialState(1)
                 .build();
     }
 
@@ -35,10 +28,9 @@ public class AutomatonTest {
     public void ifInvalidFinalState_builder_shouldThrowException() {
 
         thrown.expect(InvalidAutomatonException.class);
-        Automaton.<Integer, Character>builder()
-                .withState(1)
-                .withInitialState(1)
-                .withFinalState(2)
+        Automaton.<Character>builder()
+                .withNumStates(1)
+                .withFinalState(1)
                 .build();
     }
 
@@ -46,11 +38,9 @@ public class AutomatonTest {
     public void ifInvalidFromStateInTransition_builder_shouldThrowException() {
 
         thrown.expect(InvalidAutomatonException.class);
-        Automaton.<Integer, Character>builder()
-                .withState(1)
-                .withInitialState(1)
-                .withFinalState(1)
-                .withTransition(2, 'a', 1)
+        Automaton.<Character>builder()
+                .withNumStates(1)
+                .withTransition(1, 'a', 0)
                 .build();
     }
 
@@ -58,11 +48,9 @@ public class AutomatonTest {
     public void ifInvalidFromStateInEpsilonTransition_builder_shouldThrowException() {
 
         thrown.expect(InvalidAutomatonException.class);
-        Automaton.<Integer, Character>builder()
-                .withState(1)
-                .withInitialState(1)
-                .withFinalState(1)
-                .withEpsilonTransition(2, 1)
+        Automaton.<Character>builder()
+                .withNumStates(1)
+                .withEpsilonTransition(1, 0)
                 .build();
     }
 
@@ -71,11 +59,9 @@ public class AutomatonTest {
     public void ifInvalidToStateInTransition_builder_shouldThrowException() {
 
         thrown.expect(InvalidAutomatonException.class);
-        Automaton.<Integer, Character>builder()
-                .withState(1)
-                .withInitialState(1)
-                .withFinalState(1)
-                .withTransition(1, 'a', 2)
+        Automaton.<Character>builder()
+                .withNumStates(1)
+                .withTransition(0, 'a', 1)
                 .build();
     }
 
@@ -83,22 +69,19 @@ public class AutomatonTest {
     public void ifInvalidToStateInEpsilonTransition_builder_shouldThrowException() {
 
         thrown.expect(InvalidAutomatonException.class);
-        Automaton.<Integer, Character>builder()
-                .withState(1)
-                .withInitialState(1)
-                .withFinalState(1)
-                .withEpsilonTransition(1, 2)
+        Automaton.<Character>builder()
+                .withNumStates(1)
+                .withEpsilonTransition(0, 1)
                 .build();
     }
 
     @Test
     public void singleNonFinalStateAutomaton_shouldAcceptNothing() {
 
-        Automaton<Integer, Character> automaton =
-                Automaton.<Integer, Character>builder()
-                        .withState(1)
-                        .withInitialState(1)
-                        .withTransition(1, 'a', 1)
+        Automaton<Character> automaton =
+                Automaton.<Character>builder()
+                        .withNumStates(1)
+                        .withTransition(0, 'a', 0)
                         .build();
 
         Character[] input = { 'a' };
@@ -109,13 +92,12 @@ public class AutomatonTest {
     @Test
     public void singleFinalStateAutomaton_shouldAcceptInputIfMatchesTransitions() {
 
-        Automaton<Integer, Character> automaton =
-                Automaton.<Integer, Character>builder()
-                        .withState(1)
-                        .withInitialState(1)
-                        .withFinalState(1)
-                        .withTransition(1, 'a', 1)
-                        .withTransition(1, 'b', 1)
+        Automaton<Character> automaton =
+                Automaton.<Character>builder()
+                        .withNumStates(1)
+                        .withFinalState(0)
+                        .withTransition(0, 'a', 0)
+                        .withTransition(0, 'b', 0)
                         .build();
 
         Character[] input1 = { 'a' };
@@ -137,18 +119,14 @@ public class AutomatonTest {
     @Test
     public void automationJumpsThroughEpsilonTransitions() {
 
-        Automaton<Integer, Character> automaton =
-                Automaton.<Integer, Character>builder()
-                        .withState(1)
-                        .withState(2)
-                        .withState(3)
-                        .withState(4)
-                        .withInitialState(1)
-                        .withFinalState(4)
-                        .withEpsilonTransition(1, 2)
-                        .withEpsilonTransition(1, 3)
-                        .withTransition(2, 'a', 3)
-                        .withTransition(3, 'b', 4)
+        Automaton<Character> automaton =
+                Automaton.<Character>builder()
+                        .withNumStates(4)
+                        .withFinalState(3)
+                        .withEpsilonTransition(0, 1)
+                        .withEpsilonTransition(0, 2)
+                        .withTransition(1, 'a', 2)
+                        .withTransition(2, 'b', 3)
                         .build();
 
         Character[] input1 = { 'a', 'b' };
