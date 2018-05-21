@@ -1,3 +1,12 @@
+# IntelliJ files
+.idea
+
+# Gradle #
+.gradle
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
 # Compiled class file
 *.class
 
