@@ -101,17 +101,30 @@ public class AutomatonTest {
         Character[] input1 = { 'a' };
         assertThat(automaton.accepts(input1), is(true));
 
-
         Character[] input2 = { 'b' };
         assertThat(automaton.accepts(input2), is(true));
-
 
         Character[] input3 = { 'a', 'b' };
         assertThat(automaton.accepts(input3), is(true));
 
-
         Character[] input4 = { 'b', 'a' };
         assertThat(automaton.accepts(input4), is(true));
+    }
+
+    @Test
+    public void automaton_shouldNotAcceptPartialInput() {
+
+        Automaton<Character> automaton =
+                Automaton.<Character>builder()
+                        .withNumStates(3)
+                        .withInitialState(0)
+                        .withFinalState(2)
+                        .withTransition(0, 'a', 1)
+                        .withTransition(1, 'b', 2)
+                        .build();
+
+        Character[] input = { 'a' };
+        assertThat(automaton.accepts(input), is(false));
     }
 
     @Test

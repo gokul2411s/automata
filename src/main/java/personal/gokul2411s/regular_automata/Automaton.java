@@ -4,6 +4,7 @@ import com.google.common.collect.*;
 import lombok.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents a non-deterministic finite automaton.
@@ -43,37 +44,36 @@ public class Automaton<Symbol> {
 
         Set<Integer> currentStates = new HashSet<>();
         currentStates.addAll(epsilonClosure(initialState));
-        if (reachedFinalState(currentStates)) {
-            return true;
-        }
 
         for (Symbol symbol : input) {
-            Set<Integer> nextStates = new HashSet<>();
-            for (int currentState : currentStates) {
-                for (int adjacentState : adjacentStates(currentState, symbol)) {
-                    Set<Integer> adjacentStateEpsilonClosure = epsilonClosure(adjacentState);
-                    nextStates.addAll(adjacentStateEpsilonClosure);
-                    if (reachedFinalState(adjacentStateEpsilonClosure)) {
-                        return true;
-                    }
-                }
-            }
+            Set<Integer> nextStates =
+                    currentStates.stream()
+                            .map(s -> adjacentStates(s, symbol))
+                            .flatMap(Set::stream)
+                            .collect(Collectors.toSet());
+            currentStates = epsilonClosure(nextStates);
         }
-
-        return false;
+        return reachedFinalState(currentStates);
     }
 
     private boolean reachedFinalState(Set<Integer> currentStates) {
         return !Sets.intersection(currentStates, finalStates).isEmpty();
     }
 
-    private Set<Integer> epsilonClosure(int s) {
-        Set<Integer> bfsStates = new HashSet<>();
-        bfsStates.add(s);
+    private Set<Integer> epsilonClosure(int state) {
+        Set<Integer> states = new HashSet<>();
+        states.add(state);
+        return epsilonClosure(states);
+    }
+
+    private Set<Integer> epsilonClosure(Set<Integer> states) {
+        Queue<Integer> bfsStates = new LinkedList<>();
+        for (int state : states) {
+            bfsStates.add(state);
+        }
         Set<Integer> visited = new HashSet<>();
         while (!bfsStates.isEmpty()) {
-            int nextState = bfsStates.iterator().next();
-            bfsStates.remove(nextState);
+            int nextState = bfsStates.remove();
             if (visited.contains(nextState)) {
                 continue;
             }
