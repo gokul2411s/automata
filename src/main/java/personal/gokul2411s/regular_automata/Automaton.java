@@ -43,6 +43,9 @@ public class Automaton<Symbol> {
 
         Set<Integer> currentStates = new HashSet<>();
         currentStates.addAll(epsilonClosure(initialState));
+        if (reachedFinalState(currentStates)) {
+            return true;
+        }
 
         for (Symbol symbol : input) {
             Set<Integer> nextStates = new HashSet<>();
@@ -50,7 +53,7 @@ public class Automaton<Symbol> {
                 for (int adjacentState : adjacentStates(currentState, symbol)) {
                     Set<Integer> adjacentStateEpsilonClosure = epsilonClosure(adjacentState);
                     nextStates.addAll(adjacentStateEpsilonClosure);
-                    if (!Sets.intersection(adjacentStateEpsilonClosure, finalStates).isEmpty()) {
+                    if (reachedFinalState(adjacentStateEpsilonClosure)) {
                         return true;
                     }
                 }
@@ -60,10 +63,24 @@ public class Automaton<Symbol> {
         return false;
     }
 
+    private boolean reachedFinalState(Set<Integer> currentStates) {
+        return !Sets.intersection(currentStates, finalStates).isEmpty();
+    }
+
     private Set<Integer> epsilonClosure(int s) {
-        Set<Integer> states = epsilonTransitions.getOrDefault(s, new HashSet<>());
-        states.add(s);
-        return states;
+        Set<Integer> bfsStates = new HashSet<>();
+        bfsStates.add(s);
+        Set<Integer> visited = new HashSet<>();
+        while (!bfsStates.isEmpty()) {
+            int nextState = bfsStates.iterator().next();
+            bfsStates.remove(nextState);
+            if (visited.contains(nextState)) {
+                continue;
+            }
+            visited.add(nextState);
+            bfsStates.addAll(epsilonTransitions.getOrDefault(nextState, new HashSet<>()));
+        }
+        return visited;
     }
 
     private Set<Integer> adjacentStates(int s, Symbol sym) {

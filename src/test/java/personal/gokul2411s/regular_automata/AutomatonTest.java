@@ -54,7 +54,6 @@ public class AutomatonTest {
                 .build();
     }
 
-
     @Test
     public void ifInvalidToStateInTransition_builder_shouldThrowException() {
 
@@ -87,7 +86,6 @@ public class AutomatonTest {
         Character[] input = { 'a' };
         assertThat(automaton.accepts(input), is(false));
     }
-
 
     @Test
     public void singleFinalStateAutomaton_shouldAcceptInputIfMatchesTransitions() {
@@ -124,21 +122,12 @@ public class AutomatonTest {
                         .withNumStates(4)
                         .withFinalState(3)
                         .withEpsilonTransition(0, 1)
-                        .withEpsilonTransition(0, 2)
-                        .withTransition(1, 'a', 2)
+                        .withEpsilonTransition(1, 2)
                         .withTransition(2, 'b', 3)
                         .build();
 
-        Character[] input1 = { 'a', 'b' };
-        assertThat(automaton.accepts(input1), is(true));
-
-
         Character[] input2 = { 'b' };
         assertThat(automaton.accepts(input2), is(true));
-
-
-        Character[] input3 = { 'a' };
-        assertThat(automaton.accepts(input3), is(false));
 
         assertThat(automaton.accepts(Arrays.asList()), is(false));
     }
