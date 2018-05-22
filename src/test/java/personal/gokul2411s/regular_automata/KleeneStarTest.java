@@ -17,10 +17,10 @@ public class KleeneStarTest {
     public void kleeneStarredAutomaton_alwaysAcceptsEmptyInput() {
         Automaton<Character> originalAutomaton =
                 Automaton.<Character>builder()
-                        .withNumStates(1)
+                        .withNumStates(2)
                         .withInitialState(0)
-                        .withFinalState(0)
-                        .withTransition(0, 'a', 0)
+                        .withFinalState(1)
+                        .withTransition(0, 'a', 1)
                         .build();
 
         Automaton<Character> kleeneStarredAutomaton = new KleeneStar<Character>().apply(originalAutomaton);
@@ -45,7 +45,7 @@ public class KleeneStarTest {
         List<Character> originalAcceptedInput = new ArrayList<>();
         originalAcceptedInput.add('a');
         originalAcceptedInput.add('b');
-        for (int i = 2; i < 1000; i++) {
+        for (int i = 1; i < 1000; i++) {
             List<Character> input =
                     Collections.nCopies(i, originalAcceptedInput).stream()
                             .flatMap(List::stream)
