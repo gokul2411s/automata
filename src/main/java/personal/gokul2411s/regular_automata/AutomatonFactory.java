@@ -23,5 +23,9 @@ public final class AutomatonFactory {
         return new Concatenation<Symbol>().apply(first, second);
     }
 
+    public static <Symbol> Automaton<Symbol> determinized(Automaton<Symbol> automaton) {
+        return new Determinization<Symbol>().apply(automaton);
+    }
+
     private AutomatonFactory() { }
 }

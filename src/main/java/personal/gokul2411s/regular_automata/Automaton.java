@@ -1,5 +1,6 @@
 package personal.gokul2411s.regular_automata;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
 import lombok.*;
 
@@ -46,6 +47,9 @@ public class Automaton<Symbol> {
         currentStates.addAll(epsilonClosure(initialState));
 
         for (Symbol symbol : input) {
+            if (currentStates.isEmpty()) {
+                return false;
+            }
             Set<Integer> nextStates =
                     currentStates.stream()
                             .map(s -> adjacentStates(s, symbol))
@@ -60,13 +64,19 @@ public class Automaton<Symbol> {
         return !Sets.intersection(currentStates, finalStates).isEmpty();
     }
 
-    private Set<Integer> epsilonClosure(int state) {
+    /**
+     * Returns the epsilon closure of a given state.
+     */
+    public Set<Integer> epsilonClosure(int state) {
         Set<Integer> states = new HashSet<>();
         states.add(state);
         return epsilonClosure(states);
     }
 
-    private Set<Integer> epsilonClosure(Set<Integer> states) {
+    /**
+     * Returns the epsilon closure of a given set of states.
+     */
+    public Set<Integer> epsilonClosure(Set<Integer> states) {
         Queue<Integer> bfsStates = new LinkedList<>();
         for (int state : states) {
             bfsStates.add(state);
@@ -89,6 +99,10 @@ public class Automaton<Symbol> {
             out = new HashSet<>();
         }
         return out;
+    }
+
+    public Map<Symbol, Set<Integer>> stateTransitions(int state) {
+        return transitions.row(state);
     }
 
     public static <Symbol> AutomatonBuilder<Symbol> builder() {
@@ -124,6 +138,12 @@ public class Automaton<Symbol> {
             return this;
         }
 
+        public AutomatonBuilder<Symbol> withFinalStates(Set<Integer> finalStates) {
+            Preconditions.checkNotNull(finalStates);
+            this.finalStates = finalStates;
+            return this;
+        }
+
         public AutomatonBuilder<Symbol> withTransition(int from, Symbol s, int to) {
             Set<Integer> toStates = transitions.get(from, s);
             if (toStates == null) {
@@ -131,6 +151,15 @@ public class Automaton<Symbol> {
                 transitions.put(from, s, toStates);
             }
             toStates.add(to);
+            return this;
+        }
+
+        public AutomatonBuilder<Symbol> withTransitions(Table<Integer, Symbol, Set<Integer>> transitions) {
+            Preconditions.checkNotNull(transitions);
+            for (Table.Cell<Integer, Symbol, Set<Integer>> cell : transitions.cellSet()) {
+                Preconditions.checkNotNull(cell.getValue());
+            }
+            this.transitions = transitions;
             return this;
         }
 
