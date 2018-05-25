@@ -1,6 +1,18 @@
 package personal.gokul2411s.regular_automata;
 
+import java.util.Arrays;
+import java.util.List;
+
 public final class AutomatonFactory {
+
+    public static <Symbol> Automaton<Symbol> automatonAcceptingEmptyInput() {
+        return Automaton.<Symbol>builder()
+                .withNumStates(1)
+                .withInitialState(0)
+                .withFinalState(0)
+                .withEpsilonTransition(0, 0)
+                .build();
+    }
 
     public static <Symbol> Automaton<Symbol> automatonAcceptingSingleSymbol(Symbol symbol) {
         return Automaton.<Symbol>builder()
