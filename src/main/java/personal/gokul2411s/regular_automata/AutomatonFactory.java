@@ -1,9 +1,19 @@
 package personal.gokul2411s.regular_automata;
 
-import java.util.Arrays;
-import java.util.List;
-
 public final class AutomatonFactory {
+
+    public static Automaton<Character> automatonAcceptingAllChars() {
+        Automaton.AutomatonBuilder<Character> outputBuilder =
+                Automaton.<Character>builder()
+                        .withNumStates(2)
+                        .withInitialState(0)
+                        .withFinalState(1);
+
+        for (int i = 0; i < 65536; i++) {
+            outputBuilder.withTransition(0, (char) i, 1);
+        }
+        return outputBuilder.build();
+    }
 
     public static <Symbol> Automaton<Symbol> automatonAcceptingEmptyInput() {
         return Automaton.<Symbol>builder()

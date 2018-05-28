@@ -70,6 +70,9 @@ public class Regex {
                     }
                     currentAutomata.add(kleeneStarred(currentAutomata.remove(currentAutomata.size() - 1)));
                     index++;
+                } else if (isCatchAllOperator(charAtIndex)) {
+                    currentAutomata.add(automatonAcceptingAllChars());
+                    index++;
                 } else {
                     currentAutomata.add(automatonAcceptingSingleSymbol(charAtIndex));
                     index++;
@@ -138,15 +141,6 @@ public class Regex {
             return new Pair<>(automaton(groupStartIndex + 1, index - 1), index);
         }
 
-        private static boolean isSimpleChar(char c) {
-            return true
-                    && !isUnionOperator(c)
-                    && !isKleeneStarOperator(c)
-                    && !isUnionOperator(c)
-                    && !isGroupBeginning(c)
-                    && !isGroupEnding(c);
-        }
-
         private static boolean isUnionOperator(char c) {
             return c == '|';
         }
@@ -163,6 +157,10 @@ public class Regex {
             return c == ')';
         }
 
+        private static boolean isCatchAllOperator(char c) {
+            return c == '.';
+        }
+
         @Value
         private static class Pair<A, B> {
 
@@ -173,7 +171,4 @@ public class Regex {
             private final B second;
         }
     }
-
-
-
 }

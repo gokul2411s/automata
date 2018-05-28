@@ -136,4 +136,18 @@ public class RegexTest {
         assertThat(regex.matches("aab"), is(true));
         assertThat(regex.matches("aac"), is(true));
     }
+
+    @Test
+    public void dotOperator_shouldWork() {
+        Regex regex = Regex.builder().withPattern(".*a*").build();
+        assertThat(regex.matches(""), is(true));
+        assertThat(regex.matches("a"), is(true));
+        assertThat(regex.matches("aa"), is(true));
+        for (int i = 0; i < 65536; i++) {
+            String base = String.valueOf((char) i);
+            assertThat(regex.matches(base), is(true));
+            assertThat(regex.matches(base + "a"), is(true));
+            assertThat(regex.matches(base + "aa"), is(true));
+        }
+    }
 }
