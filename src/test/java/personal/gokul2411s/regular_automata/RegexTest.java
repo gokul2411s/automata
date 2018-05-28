@@ -39,36 +39,49 @@ public class RegexTest {
     @Test
     public void unmatchedGroupInRegex_shouldThrowException() {
         thrown.expect(InvalidRegexException.class);
+        thrown.expectMessage(is("No matching group close for index 1"));
         Regex.builder().withPattern("a(bc").build();
     }
 
     @Test
     public void strayClosingGroupInRegex_shouldThrowException() {
         thrown.expect(InvalidRegexException.class);
+        thrown.expectMessage(is("Stray closing group at index 2"));
         Regex.builder().withPattern("ab)c").build();
     }
 
     @Test
     public void strayOpeningGroupInRegex_shouldThrowException() {
         thrown.expect(InvalidRegexException.class);
+        thrown.expectMessage(is("Stray opening group at index 3"));
         Regex.builder().withPattern("a(b(c)").build();
     }
 
     @Test
     public void kleeneStarWithNothingOnTheLeft_shouldThrowException() {
         thrown.expect(InvalidRegexException.class);
+        thrown.expectMessage(is("No expression preceeds Kleene star at index 0"));
         Regex.builder().withPattern("*").build();
+    }
+
+    @Test
+    public void nonQuantifiableExpressionBeforeKleeneStar_shouldThrowException() {
+        thrown.expect(InvalidRegexException.class);
+        thrown.expectMessage(is("Non-quantifiable expression preceeding Kleene star at index 2"));
+        Regex.builder().withPattern(".**").build();
     }
 
     @Test
     public void unionWithNothingOnTheLeft_shouldThrowException() {
         thrown.expect(InvalidRegexException.class);
+        thrown.expectMessage(is("No expression preceeds union at index 0"));
         Regex.builder().withPattern("|b").build();
     }
 
     @Test
     public void unionWithNothingOnTheRight_shouldThrowException() {
         thrown.expect(InvalidRegexException.class);
+        thrown.expectMessage(is("No expression follows union at index 1"));
         Regex.builder().withPattern("a|").build();
     }
 

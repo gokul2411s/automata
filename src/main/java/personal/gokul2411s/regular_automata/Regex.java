@@ -47,6 +47,7 @@ public class Regex {
             List<Automaton<Character>> concatenatedAutomata = new ArrayList<>();
             List<Automaton<Character>> currentAutomata = new ArrayList<>();
             boolean lastCharacterUnionOp = false;
+            boolean currentAutomatonQuantifiable = true;
             while (index < endIndex) {
                 char charAtIndex = pattern.charAt(index);
                 lastCharacterUnionOp = false;
@@ -55,6 +56,7 @@ public class Regex {
                 } else if (isGroupBeginning(charAtIndex)) {
                     Pair<Automaton<Character>, Integer> out = automatonForGroup(index);
                     currentAutomata.add(out.getFirst());
+                    currentAutomatonQuantifiable = true;
                     index = out.getSecond();
                 } else if (isUnionOperator(charAtIndex)) {
                     if (currentAutomata.isEmpty()) {
@@ -68,13 +70,20 @@ public class Regex {
                     if (currentAutomata.isEmpty()) {
                         throw new InvalidRegexException("No expression preceeds Kleene star at index " + index);
                     }
+                    if (!currentAutomatonQuantifiable) {
+                        throw new InvalidRegexException(
+                                "Non-quantifiable expression preceeding Kleene star at index " + index);
+                    }
+                    currentAutomatonQuantifiable = false;
                     currentAutomata.add(kleeneStarred(currentAutomata.remove(currentAutomata.size() - 1)));
                     index++;
                 } else if (isCatchAllOperator(charAtIndex)) {
                     currentAutomata.add(automatonAcceptingAllChars());
+                    currentAutomatonQuantifiable = true;
                     index++;
                 } else {
                     currentAutomata.add(automatonAcceptingSingleSymbol(charAtIndex));
+                    currentAutomatonQuantifiable = true;
                     index++;
                 }
             }
