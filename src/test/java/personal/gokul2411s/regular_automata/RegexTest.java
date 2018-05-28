@@ -65,24 +65,17 @@ public class RegexTest {
     }
 
     @Test
+    public void kleeneStarImmediatelyAfterUnion_shouldThrowException() {
+        thrown.expect(InvalidRegexException.class);
+        thrown.expectMessage(is("No expression preceeds Kleene star at index 2"));
+        Regex.builder().withPattern("a|*").build();
+    }
+
+    @Test
     public void nonQuantifiableExpressionBeforeKleeneStar_shouldThrowException() {
         thrown.expect(InvalidRegexException.class);
         thrown.expectMessage(is("Non-quantifiable expression preceeding Kleene star at index 2"));
         Regex.builder().withPattern(".**").build();
-    }
-
-    @Test
-    public void unionWithNothingOnTheLeft_shouldThrowException() {
-        thrown.expect(InvalidRegexException.class);
-        thrown.expectMessage(is("No expression preceeds union at index 0"));
-        Regex.builder().withPattern("|b").build();
-    }
-
-    @Test
-    public void unionWithNothingOnTheRight_shouldThrowException() {
-        thrown.expect(InvalidRegexException.class);
-        thrown.expectMessage(is("No expression follows union at index 1"));
-        Regex.builder().withPattern("a|").build();
     }
 
     @Test
@@ -131,6 +124,17 @@ public class RegexTest {
         assertThat(regex.matches("d"), is(true));
         assertThat(regex.matches("e"), is(false));
         assertThat(regex.matches(""), is(false));
+    }
+
+    @Test
+    public void unionWithNothingOnOneSide_shouldAcceptEmptyInputAndOtherSide() {
+        Regex regex1 = Regex.builder().withPattern("|b").build();
+        assertThat(regex1.matches(""), is(true));
+        assertThat(regex1.matches("b"), is(true));
+
+        Regex regex2 = Regex.builder().withPattern("a|").build();
+        assertThat(regex2.matches("a"), is(true));
+        assertThat(regex2.matches(""), is(true));
     }
 
     @Test

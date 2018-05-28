@@ -46,11 +46,9 @@ public class Regex {
             int index = startIndex;
             List<Automaton<Character>> concatenatedAutomata = new ArrayList<>();
             List<Automaton<Character>> currentAutomata = new ArrayList<>();
-            boolean lastCharacterUnionOp = false;
             boolean currentAutomatonQuantifiable = true;
             while (index < endIndex) {
                 char charAtIndex = pattern.charAt(index);
-                lastCharacterUnionOp = false;
                 if (isGroupEnding(charAtIndex)) {
                     throw new InvalidRegexException("Stray closing group at index " + index);
                 } else if (isGroupBeginning(charAtIndex)) {
@@ -60,12 +58,12 @@ public class Regex {
                     index = out.getSecond();
                 } else if (isUnionOperator(charAtIndex)) {
                     if (currentAutomata.isEmpty()) {
-                        throw new InvalidRegexException("No expression preceeds union at index " + index);
+                        concatenatedAutomata.add(automatonAcceptingEmptyInput());
+                    } else {
+                        concatenatedAutomata.add(concatenated(currentAutomata));
+                        currentAutomata.clear();
                     }
-                    concatenatedAutomata.add(concatenated(currentAutomata));
-                    currentAutomata.clear();
                     index++;
-                    lastCharacterUnionOp = true;
                 } else if (isKleeneStarOperator(charAtIndex)) {
                     if (currentAutomata.isEmpty()) {
                         throw new InvalidRegexException("No expression preceeds Kleene star at index " + index);
@@ -88,11 +86,9 @@ public class Regex {
                 }
             }
 
-            if (lastCharacterUnionOp) {
-                throw new InvalidRegexException("No expression follows union at index " + (index - 1));
-            }
-
-            if (!currentAutomata.isEmpty()) {
+            if (currentAutomata.isEmpty()) {
+                concatenatedAutomata.add(automatonAcceptingEmptyInput());
+            } else {
                 concatenatedAutomata.add(concatenated(currentAutomata));
                 currentAutomata.clear();
             }
